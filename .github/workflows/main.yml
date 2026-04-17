@@ -1,21 +1,17 @@
 name: CI Pipeline
 
-on:
+'on':
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # -------------------------------
-      # BACKEND (.NET)
-      # -------------------------------
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -27,25 +23,18 @@ jobs:
       - name: Build Backend
         run: dotnet build ./ERP.UserAPI --no-restore
 
-      # -------------------------------
-      # FRONTEND (Angular)
-      # -------------------------------
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install Frontend
-        run: |
-          cd erp-user-ui
-          npm install
+        working-directory: ./erp-user-ui
+        run: npm install
 
       - name: Build Frontend
-        run: |
-          cd erp-user-ui
-          npm run build
-
-
+        working-directory: ./erp-user-ui
+        run: npm run build
 
       - name: Build Backend Docker Image
         run: docker build -t erp-backend ./ERP.UserAPI
