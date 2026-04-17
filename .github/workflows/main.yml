@@ -1,0 +1,54 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------
+      # BACKEND (.NET)
+      # -------------------------------
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Backend
+        run: dotnet restore ./ERP.UserAPI
+
+      - name: Build Backend
+        run: dotnet build ./ERP.UserAPI --no-restore
+
+      # -------------------------------
+      # FRONTEND (Angular)
+      # -------------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend
+        run: |
+          cd erp-user-ui
+          npm install
+
+      - name: Build Frontend
+        run: |
+          cd erp-user-ui
+          npm run build
+
+
+
+      - name: Build Backend Docker Image
+        run: docker build -t erp-backend ./ERP.UserAPI
+
+      - name: Build Frontend Docker Image
+        run: docker build -t erp-frontend ./erp-user-ui
